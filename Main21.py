@@ -1037,6 +1037,6 @@ if st.session_state.quiz_finished:
         st.session_state.user_profile = {}
         st.session_state.suggested_questions = []
         st.session_state.user_answers = {}
-        st.experimental_rerun()
+        st.rerun()
 elif not st.session_state.quiz_started:
     st.info("Please fill your profile details in the sidebar and click 'Save Profile and Start Quiz' to begin.")
