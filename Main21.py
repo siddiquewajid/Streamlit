@@ -1008,7 +1008,7 @@ if st.session_state.quiz_started and not st.session_state.quiz_finished:
         if submit_button:
             if len(st.session_state.user_answers) == len(st.session_state.suggested_questions):
                 st.session_state.quiz_finished = True
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.warning("Please answer all questions before submitting.")
 
