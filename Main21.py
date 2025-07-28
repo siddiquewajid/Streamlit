@@ -981,7 +981,7 @@ if st.sidebar.button("Save Profile and Start Quiz"):
     st.session_state.user_answers = {}
     st.session_state.quiz_started = True
     st.session_state.quiz_finished = False
-    st.experimental_rerun() # Rerun to update main content area
+    st.rerun() # Rerun to update main content area
 
 if st.session_state.quiz_started and not st.session_state.quiz_finished:
     st.header("Quiz Questions")
