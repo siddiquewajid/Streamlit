@@ -976,7 +976,7 @@ if st.sidebar.button("Save Profile and Start Quiz"):
         "known_languages": user_known_languages
     }
     st.session_state.suggested_questions = get_suggested_questions(
-        st.session_state.user_profile, all_questions, num_questions_to_suggest=10 # You can adjust this number
+        st.session_state.user_profile, all_questions, num_questions_to_suggest=50 # You can adjust this number
     )
     st.session_state.user_answers = {}
     st.session_state.quiz_started = True
