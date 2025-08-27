@@ -831,11 +831,6 @@ cryptography_questions = [
         "correct_answer": "Issue digital certificates",
         "language_required": "N/A"
     }
-]
-
-
-
-
 
 ]
 
