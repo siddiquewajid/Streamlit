@@ -1,0 +1,196 @@
+import streamlit as st
+import random
+import time
+
+# --- QUESTION DATA (UNCHANGED) ---
+malware_questions = [
+    {
+        "id": 101,
+        "field": "Malware Analysis",
+        "question": "What is a 'dropper' in malware terminology?",
+        "options": ["A malware that deletes files", "A program that installs malware", "A tool for debugging", "A file encryptor"],
+        "correct_answer": "A program that installs malware",
+        "language_required": "C/C++"
+    },
+
+
+
+
+]
+
+# Combine all question lists into one for easier processing
+# [UNCHANGED CODE BLOCKS DEFINING QUESTIONS]
+
+# --- Functions (get_suggested_questions, score_quiz, recommend_field) remain unchanged ---
+
+st.set_page_config(page_title="Cybersecurity Quiz", layout="centered")
+
+st.title("Cybersecurity Quiz")
+st.write("Welcome to the Cybersecurity Quiz! Please provide some basic details to help us customize your experience.")
+
+# Initialize session state variables
+if 'quiz_started' not in st.session_state:
+    st.session_state.quiz_started = False
+if 'current_question_index' not in st.session_state:
+    st.session_state.current_question_index = 0
+if 'user_profile' not in st.session_state:
+    st.session_state.user_profile = {}
+if 'suggested_questions' not in st.session_state:
+    st.session_state.suggested_questions = []
+if 'user_answers' not in st.session_state:
+    st.session_state.user_answers = {}
+if 'quiz_finished' not in st.session_state:
+    st.session_state.quiz_finished = False
+if 'user_performance_data' not in st.session_state:
+    st.session_state.user_performance_data = {
+        "field_correct_answers": {},
+        "field_total_questions_asked": {}
+    }
+# --- Timer State Initialization ---
+if 'question_start_time' not in st.session_state:
+    st.session_state.question_start_time = None
+if 'time_limit' not in st.session_state:
+    st.session_state.time_limit = 30
+if 'reset_timer' not in st.session_state:
+    st.session_state.reset_timer = False
+
+# Sidebar for user profile input
+courses = ["B.Tech", "MCA"]
+user_course = st.sidebar.selectbox("Which course are you pursuing?", courses, key="course_select")
+
+user_branch = "N/A"
+if user_course == "B.Tech":
+    branches = ["CSE", "IT", "ECE", "EEE", "Other"]
+    user_branch = st.sidebar.selectbox("Which branch are you in (for B.Tech)?", branches, key="branch_select")
+elif user_course == "MCA":
+    user_branch = "MCA"
+
+all_available_languages = sorted(list(set(q["language_required"] for q in all_questions if q.get("language_required") and q["language_required"] != "N/A")))
+user_known_languages_selected = st.sidebar.multiselect(
+    "Which programming languages do you know?",
+    all_available_languages,
+    key="languages_multiselect"
+)
+user_known_languages = user_known_languages_selected
+
+quiz_total_questions = st.sidebar.slider("Number of questions in this quiz:", min_value=10, max_value=len(all_questions), value=20, step=5)
+
+if st.sidebar.button("Save Profile and Start Quiz"):
+    st.session_state.user_profile = {
+        "course": user_course,
+        "branch": user_branch,
+        "known_languages": user_known_languages
+    }
+    st.session_state.suggested_questions = get_suggested_questions(
+        st.session_state.user_profile,
+        all_questions,
+        user_performance_data=st.session_state.user_performance_data,
+        num_questions_to_suggest=quiz_total_questions
+    )
+    st.session_state.user_answers = {}
+    st.session_state.current_question_index = 0
+    st.session_state.quiz_started = True
+    st.session_state.quiz_finished = False
+    # 🔹 START TIMER FOR Q1
+    st.session_state.reset_timer = True
+    st.session_state.question_start_time = None
+    st.session_state.time_limit = 30
+    st.rerun()
+
+if st.session_state.quiz_started and not st.session_state.quiz_finished:
+    if not st.session_state.suggested_questions:
+        st.warning("No questions could be suggested based on your profile and language selections. Please adjust your profile or try again.")
+        if st.button("Back to Profile Setup"):
+            st.session_state.quiz_started = False
+            st.rerun()
+    else:
+        current_question = st.session_state.suggested_questions[st.session_state.current_question_index]
+
+        st.header(f"Question {st.session_state.current_question_index + 1}/{len(st.session_state.suggested_questions)}")
+        st.write(f"**Field:** {current_question['field']}")
+
+        # 🔹 Timer logic
+        if st.session_state.question_start_time is None or st.session_state.reset_timer:
+            st.session_state.time_limit = 30 * (st.session_state.current_question_index + 1)
+            st.session_state.question_start_time = time.time()
+            st.session_state.reset_timer = False
+
+        elapsed = int(time.time() - st.session_state.question_start_time)
+        remaining_time = st.session_state.time_limit - elapsed
+
+        if remaining_time <= 0:
+            st.warning("⏰ Time’s up! Moving to the next question.")
+            st.session_state.current_question_index += 1
+            st.session_state.reset_timer = True
+            if st.session_state.current_question_index >= len(st.session_state.suggested_questions):
+                st.session_state.quiz_finished = True
+            st.rerun()
+        else:
+            st.progress(max(0.0, remaining_time / st.session_state.time_limit))
+            st.write(f"⏳ Time remaining: **{remaining_time} seconds**")
+
+        with st.form(key=f'question_form_{current_question["id"]}'):
+            st.markdown(f"**Question:** {current_question['question']}")
+
+            current_answer = st.session_state.user_answers.get(current_question["id"])
+            current_index = None
+            if current_answer in current_question["options"]:
+                current_index = current_question["options"].index(current_answer)
+
+            user_choice = st.radio(
+                "Select your answer:",
+                current_question["options"],
+                key=f"radio_{current_question['id']}",
+                index=current_index
+            )
+
+            if user_choice:
+                st.session_state.user_answers[current_question["id"]] = user_choice
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.form_submit_button(label='Next Question'):
+                    if current_question["id"] in st.session_state.user_answers:
+                        st.session_state.reset_timer = True
+                        st.session_state.current_question_index += 1
+                        if st.session_state.current_question_index >= len(st.session_state.suggested_questions):
+                            st.session_state.quiz_finished = True
+                        st.rerun()
+                    else:
+                        st.warning("Please select an answer before proceeding.")
+
+            with col2:
+                if st.session_state.current_question_index == len(st.session_state.suggested_questions) - 1:
+                    if st.form_submit_button(label='Finish Quiz'):
+                        if current_question["id"] in st.session_state.user_answers:
+                            st.session_state.reset_timer = True
+                            st.session_state.quiz_finished = True
+                            st.rerun()
+                        else:
+                            st.warning("Please select an answer for the last question before finishing.")
+
+elif st.session_state.quiz_finished:
+    # [UNCHANGED RESULTS DISPLAY CODE]
+    if st.button("Start New Quiz"):
+        st.session_state.quiz_started = False
+        st.session_state.quiz_finished = False
+        st.session_state.user_profile = {}
+        st.session_state.suggested_questions = []
+        st.session_state.user_answers = {}
+        st.session_state.current_question_index = 0
+        # 🔹 reset timer state
+        st.session_state.question_start_time = None
+        st.session_state.time_limit = 30
+        st.session_state.reset_timer = False
+        st.rerun()
+elif not st.session_state.quiz_started:
+    st.info("Please fill your profile details in the sidebar and click 'Save Profile and Start Quiz' to begin.")
+
+# 🔹 Auto-refresh to update countdown
+if st.session_state.get('quiz_started') and not st.session_state.get('quiz_finished'):
+    if st.session_state.get('question_start_time'):
+        elapsed = int(time.time() - st.session_state.question_start_time)
+        remaining_time = st.session_state.time_limit - elapsed
+        if remaining_time > 0 and not st.session_state.get('reset_timer', False):
+            time.sleep(1)
+            st.rerun()
