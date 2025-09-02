@@ -846,7 +846,7 @@ all_questions = (
      appsec_questions +
      reverse_engineering_questions +
      cryptography_questions +
-)
+   )
 
 st.set_page_config(page_title="Cybersecurity Quiz", layout="centered")
 
