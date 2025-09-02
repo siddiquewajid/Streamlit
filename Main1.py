@@ -2,7 +2,7 @@ import streamlit as st
 import random
 import time
 
-# --- QUESTION DATA (UNCHANGED) ---
+# --- QUESTION DATA ---
 malware_questions = [
     {
         "id": 101,
@@ -835,9 +835,18 @@ cryptography_questions = [
 ]
 
 # Combine all question lists into one for easier processing
-# [UNCHANGED CODE BLOCKS DEFINING QUESTIONS]
-
-# --- Functions (get_suggested_questions, score_quiz, recommend_field) remain unchanged ---
+all_questions = (
+malware_questions +
+network_security_questions +
+cryptography_questions +
+web_security_questions +
+forensics_questions +
+wireless_security_questions +
+cloud_security_questions +
+incident_response_questions +
+iot_security_questions +
+risk_management_questions
+)
 
 st.set_page_config(page_title="Cybersecurity Quiz", layout="centered")
 
