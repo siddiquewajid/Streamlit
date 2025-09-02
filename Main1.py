@@ -881,7 +881,7 @@ if user_course == "B.Tech":
 elif user_course == "MCA":
     user_branch = "MCA"
 
-all_available_languages = sorted(list(set(q["language_required"] for q in all_questions if q.get("language_required") and q["language_required"] != "N/A")))
+all_available_languages = sorted(list(set(q["language_required"] for q in all_questions if isinstance(q, dict) and q.get("language_required") and q["language_required"] != "N/A" )))
 user_known_languages_selected = st.sidebar.multiselect(
     "Which programming languages do you know?",
     all_available_languages,
