@@ -837,15 +837,15 @@ cryptography_questions = [
 # Combine all question lists into one for easier processing
 all_questions = (
 malware_questions +
-network_security_questions +
-cryptography_questions +
-web_security_questions +
+pentest_questions +
 forensics_questions +
-wireless_security_questions +
-cloud_security_questions +
-incident_response_questions +
-iot_security_questions +
-risk_management_questions
+cloud_questions +
+network_questions +
+vmware_questions +
+iot_questions +
+appsec_questions +
+reverse_engineering_questions +
+cryptography_questions +
 )
 
 st.set_page_config(page_title="Cybersecurity Quiz", layout="centered")
