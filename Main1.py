@@ -921,6 +921,25 @@ def get_suggested_questions(user_profile, all_questions, user_performance_data=N
 
     return suggested[:num_questions_to_suggest]
 
+def recommend_field(user_answers, all_questions):
+    """
+    Recommend a cybersecurity field based on the highest score in answered questions.
+    """
+    field_scores = {}
+
+    # Tally correct answers per field
+    for q in all_questions:
+        if q["id"] in user_answers:
+            if user_answers[q["id"]] == q["correct_answer"]:
+                field = q["field"]
+                field_scores[field] = field_scores.get(field, 0) + 1
+
+    if not field_scores:
+        return "No clear recommendation. Try more questions."
+
+    # Recommend field with max correct answers
+    best_field = max(field_scores, key=field_scores.get)
+    return f"Your strongest area seems to be: {best_field}"
 
 quiz_total_questions = st.sidebar.slider("Number of questions in this quiz:", min_value=10, max_value=len(all_questions), value=20, step=5)
 
@@ -1019,7 +1038,13 @@ if st.session_state.quiz_started and not st.session_state.quiz_finished:
                             st.warning("Please select an answer for the last question before finishing.")
 
 elif st.session_state.quiz_finished:
-    # [UNCHANGED RESULTS DISPLAY CODE]
+    st.subheader("Quiz Finished ✅")
+    st.write("Here are your results:")
+
+    # Show recommendation
+    recommendation = recommend_field(st.session_state.user_answers, all_questions)
+    st.success(recommendation)
+
     if st.button("Start New Quiz"):
         st.session_state.quiz_started = False
         st.session_state.quiz_finished = False
@@ -1027,11 +1052,11 @@ elif st.session_state.quiz_finished:
         st.session_state.suggested_questions = []
         st.session_state.user_answers = {}
         st.session_state.current_question_index = 0
-        # 🔹 reset timer state
         st.session_state.question_start_time = None
         st.session_state.time_limit = 30
         st.session_state.reset_timer = False
         st.rerun()
+
 elif not st.session_state.quiz_started:
     st.info("Please fill your profile details in the sidebar and click 'Save Profile and Start Quiz' to begin.")
 
