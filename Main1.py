@@ -979,7 +979,7 @@ if st.session_state.quiz_started and not st.session_state.quiz_finished:
 
         # 🔹 Timer logic
         if st.session_state.question_start_time is None or st.session_state.reset_timer:
-            st.session_state.time_limit = 30 * (st.session_state.current_question_index + 1)
+            st.session_state.time_limit = 30 
             st.session_state.question_start_time = time.time()
             st.session_state.reset_timer = False
 
