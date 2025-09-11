@@ -898,6 +898,30 @@ user_known_languages_selected = st.sidebar.multiselect(
 )
 user_known_languages = user_known_languages_selected
 
+def get_suggested_questions(user_profile, all_questions, user_performance_data=None, num_questions_to_suggest=20):
+    """
+    Suggest questions based on user's known languages and optionally past performance.
+    """
+    suggested = []
+
+    # Match questions by known languages
+    if user_profile.get("known_languages"):
+        for q in all_questions:
+            if isinstance(q, dict) and q.get("language_required") in user_profile["known_languages"]:
+                suggested.append(q)
+
+    # If not enough, add random questions
+    if len(suggested) < num_questions_to_suggest:
+        remaining = [q for q in all_questions if q not in suggested]
+        if remaining:
+            suggested.extend(random.sample(remaining, min(num_questions_to_suggest - len(suggested), len(remaining))))
+
+    # Shuffle for randomness
+    random.shuffle(suggested)
+
+    return suggested[:num_questions_to_suggest]
+
+
 quiz_total_questions = st.sidebar.slider("Number of questions in this quiz:", min_value=10, max_value=len(all_questions), value=20, step=5)
 
 if st.sidebar.button("Save Profile and Start Quiz"):
